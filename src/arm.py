@@ -12,7 +12,7 @@ class armtakeoff():
             self.current_state = state
         
         rospy.init_node('arm_and_takeoff_node', anonymous=True)
-        self.current_state = State() 
+        self.current_state = State()
         self.local_pos_pub = rospy.Publisher('/mavros/setpoint_position/local', PoseStamped, queue_size=10)
         self.state_sub = rospy.Subscriber('/mavros/state', State, state_cb)  # $This topic was wrong
         self.arming_client = rospy.ServiceProxy('/mavros/cmd/arming', CommandBool)
@@ -40,8 +40,10 @@ class armtakeoff():
             rate.sleep()
 
         last_request = rospy.get_rostime()
-        while prev_state.armed == self.current_state.armed:
+
+        while self.current_state.armed != True: 
             print("Got in")
+            print(self.current_state.armed)
             now = rospy.get_rostime()
             if self.current_state.mode != "OFFBOARD" and (now - last_request > rospy.Duration(5.)):
                 self.set_mode_client(base_mode=0, custom_mode="OFFBOARD")
@@ -63,5 +65,5 @@ class armtakeoff():
             pose.pose.position.x = 0
             if prev_state.armed == self.current_state.armed:
                 for i in range(100):
-                    self.local_pos_pub.publish(pose)
+                    self.local_pos_pub.publish(pose)     
             rate.sleep()

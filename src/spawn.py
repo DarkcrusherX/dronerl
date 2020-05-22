@@ -15,4 +15,4 @@ sdff = f.read()
 
 rospy.wait_for_service('gazebo/spawn_sdf_model')
 spawn_model_prox = rospy.ServiceProxy('gazebo/spawn_sdf_model', SpawnModel)
-spawn_model_prox("3DR Iris", sdff, "robotos_name_space", initial_pose, "world")
+spawn_model_prox("3DR Iris", sdff, "robotNamespace", initial_pose, "world")
