@@ -10,7 +10,7 @@ class GazeboConnection():
         self.unpause = rospy.ServiceProxy('/gazebo/unpause_physics', Empty)
         self.pause = rospy.ServiceProxy('/gazebo/pause_physics', Empty)
         self.reset_proxy = rospy.ServiceProxy('/gazebo/reset_simulation', Empty)
-    
+
     def pauseSim(self):
         rospy.wait_for_service('/gazebo/pause_physics')
         try:
