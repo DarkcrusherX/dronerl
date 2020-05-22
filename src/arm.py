@@ -67,3 +67,7 @@ class armtakeoff():
                 for i in range(100):
                     self.local_pos_pub.publish(pose)     
             rate.sleep()
+
+        def disarm(self):
+
+            self.arming_client(False)
