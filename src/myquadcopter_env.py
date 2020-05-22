@@ -4,13 +4,13 @@ import gym
 import rospy
 import time
 import numpy as np
-
+import tf
 import time
 from gym import utils, spaces
 from geometry_msgs.msg import Twist, Vector3Stamped, Pose
-from mavros_msgs.srv import CommandBool, SetMode
+from hector_uav_msgs.msg import Altimeter
 from sensor_msgs.msg import Imu
-
+from std_msgs.msg import Empty as EmptyTopicMsg
 from gym.utils import seeding
 from gym.envs.registration import register
 from gazebo_connection import GazeboConnection
@@ -30,15 +30,8 @@ class QuadCopterEnv(gym.Env):
         # We assume that a ROS node has already been created
         # before initialising the environment
         
-        self.vel_pub = rospy.Publisher('/mavros/setpoint_velocity/cmd_vel', Twist, queue_size=5)
-
-        def arm():## Arm and Takeoff
-            flightModeService = rospy.ServiceProxy('/mavros/set_mode', mavros_msgs.srv.SetMode)
-            isModeChanged = flightModeService(custom_mode='OFFBOARD') 
-            armService = rospy.ServiceProxy('/mavros/cmd/arming', mavros_msgs.srv.CommandBool)
-            armService(True)
-            takeoffService = rospy.ServiceProxy('/mavros/cmd/takeoff', mavros_msgs.srv.CommandTOL) 
-            takeoffService(altitude = 5, latitude = 0, longitude = 0, min_pitch = 0, yaw = 0)
+        self.vel_pub = rospy.Publisher('/cmd_vel', Twist, queue_size=5)
+        self.takeoff_pub = rospy.Publisher('/drone/takeoff', EmptyTopicMsg, queue_size=0)
         
         # gets training parameters from param server
         self.speed_value = rospy.get_param("/speed_value")
@@ -46,7 +39,7 @@ class QuadCopterEnv(gym.Env):
         self.desired_pose.position.z = rospy.get_param("/desired_pose/z")
         self.desired_pose.position.x = rospy.get_param("/desired_pose/x")
         self.desired_pose.position.y = rospy.get_param("/desired_pose/y")
-        self.runningstep = rospy.get_param("/runningstep")
+        self.running_step = rospy.get_param("/running_step")
         self.max_incl = rospy.get_param("/max_incl")
         self.max_altitude = rospy.get_param("/max_altitude")
         
@@ -64,7 +57,7 @@ class QuadCopterEnv(gym.Env):
         return [seed]
         
     # Resets the state of the environment and returns an initial observation.
-    def reset(self):
+    def _reset(self):
         
         # 1st: resets the simulation to initial values
         self.gazebo.resetSim()
@@ -75,7 +68,7 @@ class QuadCopterEnv(gym.Env):
         # 3rd: resets the robot to initial conditions
         self.check_topic_publishers_connection()
         self.init_desired_pose()
-        arm()
+        self.takeoff_sequence()
 
         # 4th: takes an observation of the initial condition of the robot
         data_pose, data_imu = self.take_observation()
@@ -86,13 +79,13 @@ class QuadCopterEnv(gym.Env):
 
         return observation
 
-    def step(self, action):
+    def _step(self, action):
 
         # Given the action selected by the learning algorithm,
         # we perform the corresponding movement of the robot
         
         # 1st, we decide which velocity command corresponds
-        vel_cmd = TwistStamped()
+        vel_cmd = Twist()
         if action == 0: #FORWARD
             vel_cmd.linear.x = self.speed_value
             vel_cmd.angular.z = 0.0
@@ -110,10 +103,10 @@ class QuadCopterEnv(gym.Env):
             vel_cmd.angular.z = 0.0
 
         # Then we send the command to the robot and let it go
-        # for runningstep seconds
+        # for running_step seconds
         self.gazebo.unpauseSim()
         self.vel_pub.publish(vel_cmd)
-        time.sleep(self.runningstep)
+        time.sleep(self.running_step)
         data_pose, data_imu = self.take_observation()
         self.gazebo.pauseSim()
 
