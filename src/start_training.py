@@ -12,6 +12,7 @@ import random
 import time
 import qlearn
 from gym import wrappers
+import functools
 
 # ROS packages required
 import rospy
@@ -109,6 +110,6 @@ if __name__ == '__main__':
 
     #print("Parameters: a="+str)
     rospy.loginfo("Overall score: {:0.2f}".format(last_time_steps.mean()))
-    rospy.loginfo("Best 100 score: {:0.2f}".format(reduce(lambda x, y: x + y, l[-100:]) / len(l[-100:])))
+    rospy.loginfo("Best 100 score: {:0.2f}".format(functools.reduce(lambda x, y: x + y, l[-100:]) / len(l[-100:])))
 
     env.close()

@@ -61,7 +61,10 @@ class QuadCopterEnv(gym.Env):
         
     # Resets the state of the environment and returns an initial observation.
     def _reset(self):
-        
+
+        self.gazebo.resetSim()
+
+        self.gazebo.unpauseSim()        
         # 1st disarm
         self.arming.disarm()
         
@@ -69,7 +72,7 @@ class QuadCopterEnv(gym.Env):
         self.gazebo.resetSim()
 
         # 3rd: Unpauses simulation
-        self.gazebo.unpauseSim()
+        #self.gazebo.unpauseSim()
 
         # 3rd: resets the robot to initial conditions
         # self.init_desired_pose()
