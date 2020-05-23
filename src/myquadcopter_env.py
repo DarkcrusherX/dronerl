@@ -36,10 +36,10 @@ class QuadCopterEnv(gym.Env):
         
         # gets training parameters from param server
         self.speed_value = rospy.get_param("/speed_value")
-        self.desired_pose = PoseStamped()
-        self.desired_pose.pose.position.z = rospy.get_param("/desired_pose/z")
-        self.desired_pose.pose.position.x = rospy.get_param("/desired_pose/x")
-        self.desired_pose.pose.position.y = rospy.get_param("/desired_pose/y")
+        self.desired_pose = Pose()
+        self.desired_pose.position.z = rospy.get_param("/desired_pose/z")
+        self.desired_pose.position.x = rospy.get_param("/desired_pose/x")
+        self.desired_pose.position.y = rospy.get_param("/desired_pose/y")
         self.running_step = rospy.get_param("/running_step")
         self.max_incl = rospy.get_param("/max_incl")
         self.max_altitude = rospy.get_param("/max_altitude")
@@ -87,6 +87,7 @@ class QuadCopterEnv(gym.Env):
         self.take_observation()
         observation = [self.data_pose.pose.position.x]
         
+        self.arming.disarm()
         # 5th: pauses simulation
         self.gazebo.pauseSim()
 
@@ -136,7 +137,7 @@ class QuadCopterEnv(gym.Env):
         else:
             reward -= 50
 
-        state = [self.data_pose.position.x]
+        state = [self.data_pose.pose.position.x]
         return state, reward, done, {}
 
 
@@ -170,10 +171,10 @@ class QuadCopterEnv(gym.Env):
     def init_desired_pose(self):
         
         self.take_observation()
-
+        current_init_pose = PoseStamped()
         current_init_pose = self.data_pose
         lidar = self.data_lidar
-        self.best_dist = self.calculate_dist_between_two_Points(current_init_pose.pose.position, self.desired_pose.pose.position)
+        self.best_dist = self.calculate_dist_between_two_Points(current_init_pose.pose.position, self.desired_pose.position)
     
 
     def reset_cmd_vel_commands(self):
@@ -185,7 +186,8 @@ class QuadCopterEnv(gym.Env):
 
 
     def improved_distance_reward(self, current_pose):
-        current_dist = self.calculate_dist_between_two_Points(current_pose.pose.position, self.desired_pose.pose.position)
+        current_pose = PoseStamped()
+        current_dist = self.calculate_dist_between_two_Points(current_pose.pose.position, self.desired_pose.position)
         #rospy.loginfo("Calculated Distance = "+str(current_dist))
         
         if current_dist < self.best_dist:
