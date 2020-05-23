@@ -68,6 +68,6 @@ class armtakeoff():
                     self.local_pos_pub.publish(pose)     
             rate.sleep()
 
-        def disarm(self):
+    def disarm(self):
 
-            self.arming_client(False)
+        self.arming_client(False)
