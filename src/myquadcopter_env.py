@@ -6,7 +6,7 @@ import time
 import numpy as np
 import time
 from gym import utils, spaces
-from geometry_msgs.msg import TwistStamped,PoseStamped, Vector3Stamped, Pose
+from geometry_msgs.msg import TwistStamped,PoseStamped,Pose
 
 from sensor_msgs.msg import LaserScan
 
@@ -36,10 +36,10 @@ class QuadCopterEnv(gym.Env):
         
         # gets training parameters from param server
         self.speed_value = rospy.get_param("/speed_value")
-        self.desired_pose = Pose()
-        self.desired_pose.position.z = rospy.get_param("/desired_pose/z")
-        self.desired_pose.position.x = rospy.get_param("/desired_pose/x")
-        self.desired_pose.position.y = rospy.get_param("/desired_pose/y")
+        self.desired_pose = PoseStamped()
+        self.desired_pose.pose.position.z = rospy.get_param("/desired_pose/z")
+        self.desired_pose.pose.position.x = rospy.get_param("/desired_pose/x")
+        self.desired_pose.pose.position.y = rospy.get_param("/desired_pose/y")
         self.running_step = rospy.get_param("/running_step")
         self.max_incl = rospy.get_param("/max_incl")
         self.max_altitude = rospy.get_param("/max_altitude")
@@ -47,7 +47,8 @@ class QuadCopterEnv(gym.Env):
         # stablishes connection with simulator
         self.gazebo = GazeboConnection()
         self.arming = armtakeoff()
-        
+        self.data_pose = PoseStamped()
+        self.data_lidar = LaserScan()
         self.action_space = spaces.Discrete(5) #Forward,Left,Right,Up,Down
         self.reward_range = (-np.inf, np.inf)
 
@@ -83,8 +84,8 @@ class QuadCopterEnv(gym.Env):
 
 
         # 4th: takes an observation of the initial condition of the robot
-        data_pose, data_lidar = self.take_observation()
-        observation = [data_pose.position.x]
+        self.take_observation()
+        observation = [self.data_pose.pose.position.x]
         
         # 5th: pauses simulation
         self.gazebo.pauseSim()
@@ -119,11 +120,11 @@ class QuadCopterEnv(gym.Env):
         self.gazebo.unpauseSim()
         self.vel_pub.publish(vel_cmd)
         time.sleep(self.running_step)
-        data_pose, data_lidar = self.take_observation()
+        self.take_observation()
         self.gazebo.pauseSim()
 
         # finally we get an evaluation based on what happened in the sim
-        reward,done = self.process_data(data_pose, data_lidar)
+        reward,done = self.process_data(self.data_pose, self.data_lidar)
 
         # Promote going forwards instead if turning
         if action == 0:
@@ -135,28 +136,27 @@ class QuadCopterEnv(gym.Env):
         else:
             reward -= 50
 
-        state = [data_pose.position.x]
+        state = [self.data_pose.position.x]
         return state, reward, done, {}
 
 
     def take_observation (self):
-        global data_pose 
-        def current_pos_callback(position):
 
+        def current_pos_callback(position):
             print("position data obtained")
-            data_pose = position
+            self.data_pose = position
 
 
         rospy.Subscriber('mavros/local_position/pose',PoseStamped,current_pos_callback)
-        global data_lidar 
+
         def lidar_callback(lidar_msg):
             print("lidar data obtained")
-            data_lidar=lidar_msg.ranges
+            self.data_lidar=lidar_msg.ranges
 
 
         rospy.Subscriber("laser/scan", LaserScan, lidar_callback)
 
-        return data_pose, data_lidar
+
 
     def calculate_dist_between_two_Points(self,p_init,p_end):
         a = np.array((p_init.x ,p_init.y, p_init.z))
@@ -169,9 +169,11 @@ class QuadCopterEnv(gym.Env):
 
     def init_desired_pose(self):
         
-        current_init_pose, lidar = self.take_observation()
-        
-        self.best_dist = self.calculate_dist_between_two_Points(current_init_pose.position, self.desired_pose.position)
+        self.take_observation()
+
+        current_init_pose = self.data_pose
+        lidar = self.data_lidar
+        self.best_dist = self.calculate_dist_between_two_Points(current_init_pose.pose.position, self.desired_pose.pose.position)
     
 
     def reset_cmd_vel_commands(self):
@@ -183,7 +185,7 @@ class QuadCopterEnv(gym.Env):
 
 
     def improved_distance_reward(self, current_pose):
-        current_dist = self.calculate_dist_between_two_Points(current_pose.position, self.desired_pose.position)
+        current_dist = self.calculate_dist_between_two_Points(current_pose.pose.position, self.desired_pose.pose.position)
         #rospy.loginfo("Calculated Distance = "+str(current_dist))
         
         if current_dist < self.best_dist:
@@ -199,16 +201,16 @@ class QuadCopterEnv(gym.Env):
         
 
 
-    def process_data(self, data_position, data_lidar):
+    def process_data(self, data_position):
 
         done = False
         c=0
         # Setting lidar obstacle range as 1m
-        for i in len(data_lidar):
-            if data_lidar[i] < 1:                   
+        for i in len(self.data_lidar):
+            if self.data_lidar[i] < 1:                   
                 c=c+1
         #  minimum number of lidar line  crossings        
-        if c > len(data_lidar)*0.1:                   
+        if c > len(self.data_lidar)*0.1:                   
             lidar_bad = True        
 
         if lidar_bad == True:
