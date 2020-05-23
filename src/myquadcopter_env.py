@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import gym
 import rospy
@@ -16,12 +16,13 @@ from gym.envs.registration import register
 from gazebo_connection import GazeboConnection
 from arm import armtakeoff
 
-#register the training environment in the gym as an available one
+# register the training environment in the gym as an available one
 reg = register(
     id='QuadcopterLiveShow-v0',
     entry_point='myquadcopter_env:QuadCopterEnv',
-    timestep_limit=100,
+    max_episode_steps=100,
     )
+# env = gym.make('QuadcopterLiveShow-v0')
 
 #rospy.init_node('environment _definition', anonymous=True)
 

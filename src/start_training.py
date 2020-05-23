@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 '''
     Training code made by Ricardo Tellez <rtellez@theconstructsim.com>
@@ -24,8 +24,6 @@ import myquadcopter_env
 rospy.init_node('drone_gym', anonymous=True)
 
 if __name__ == '__main__':
-    
-
 
     # Create the Gym environment
     env = gym.make('QuadcopterLiveShow-v0')
@@ -111,5 +109,4 @@ if __name__ == '__main__':
     #print("Parameters: a="+str)
     rospy.loginfo("Overall score: {:0.2f}".format(last_time_steps.mean()))
     rospy.loginfo("Best 100 score: {:0.2f}".format(functools.reduce(lambda x, y: x + y, l[-100:]) / len(l[-100:])))
-
     env.close()
