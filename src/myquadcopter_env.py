@@ -23,7 +23,7 @@ reg = register(
     timestep_limit=100,
     )
 
-rospy.init_node('environment _definition', anonymous=True)
+#rospy.init_node('environment _definition', anonymous=True)
 
 class QuadCopterEnv(gym.Env):
 
@@ -140,16 +140,17 @@ class QuadCopterEnv(gym.Env):
 
 
     def take_observation (self):
-
+        global data_pose 
         def current_pos_callback(position):
-            global data_pose 
+
+            print("position data obtained")
             data_pose = position
 
 
         rospy.Subscriber('mavros/local_position/pose',PoseStamped,current_pos_callback)
-
+        global data_lidar 
         def lidar_callback(lidar_msg):
-            global data_lidar 
+            print("lidar data obtained")
             data_lidar=lidar_msg.ranges
 
 

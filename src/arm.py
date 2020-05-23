@@ -3,7 +3,7 @@ import mavros
 from geometry_msgs.msg import PoseStamped
 from mavros_msgs.msg import State 
 from mavros_msgs.srv import CommandBool, SetMode
-
+#rospy.init_node('arm_and_takeoff_node', anonymous=True)
 class armtakeoff():
 
     def __init__(self):
@@ -11,7 +11,6 @@ class armtakeoff():
         def state_cb(state):
             self.current_state = state
         
-        rospy.init_node('arm_and_takeoff_node', anonymous=True)
         self.current_state = State()
         self.local_pos_pub = rospy.Publisher('/mavros/setpoint_position/local', PoseStamped, queue_size=10)
         self.state_sub = rospy.Subscriber('/mavros/state', State, state_cb)  # $This topic was wrong

@@ -20,10 +20,11 @@ import rospkg
 # import our training environment
 import myquadcopter_env
 
+rospy.init_node('drone_gym', anonymous=True)
 
 if __name__ == '__main__':
     
-    rospy.init_node('drone_gym', anonymous=True)
+
 
     # Create the Gym environment
     env = gym.make('QuadcopterLiveShow-v0')
