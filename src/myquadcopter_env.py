@@ -86,10 +86,9 @@ class QuadCopterEnv(gym.Env):
         # 4th: takes an observation of the initial condition of the robot
         self.take_observation()
         observation = [self.data_pose.pose.position.x]
-        
-        self.arming.disarm()
+
         # 5th: pauses simulation
-        self.gazebo.pauseSim()
+        #self.gazebo.pauseSim()
 
         return observation
 

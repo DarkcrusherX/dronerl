@@ -69,4 +69,27 @@ class armtakeoff():
 
     def disarm(self):
 
-        self.arming_client(False)
+        prev_state = self.current_state
+        rate = rospy.Rate(20.0) # MUST be more then 2Hz
+
+        rate.sleep()
+        print(self.current_state)
+        # wait for FCU connection
+        while not self.current_state.connected:
+            print("Sleeping")
+            rate.sleep()
+
+        last_request = rospy.get_rostime()
+
+        while self.current_state.armed != False: 
+            print("Got in")
+            print(self.current_state.armed)
+            now = rospy.get_rostime()
+            if self.current_state.mode != "RETURN" and (now - last_request > rospy.Duration(5.)):
+                self.set_mode_client(base_mode=0, custom_mode="RETURN")
+                last_request = now 
+            else:
+                if not self.current_state.armed and (now - last_request > rospy.Duration(5.)):
+                    self.arming_client(False)
+                    last_request = now 
+        rate.sleep()            
