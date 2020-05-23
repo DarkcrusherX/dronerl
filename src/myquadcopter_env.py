@@ -220,6 +220,7 @@ class QuadCopterEnv(gym.Env):
             lidar_bad = True        
 
         if lidar_bad == True:
+            print("Failed in lidar")
             done = True 
             reward = -200
         else:

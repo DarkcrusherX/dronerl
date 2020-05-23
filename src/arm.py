@@ -41,8 +41,8 @@ class armtakeoff():
         last_request = rospy.get_rostime()
 
         while self.current_state.armed != True: 
-            print("Got in")
-            print(self.current_state.armed)
+            #print("Got in")
+            print("Arm {}" .format(self.current_state.armed))
             now = rospy.get_rostime()
             if self.current_state.mode != "OFFBOARD" and (now - last_request > rospy.Duration(5.)):
                 self.set_mode_client(base_mode=0, custom_mode="OFFBOARD")
@@ -82,11 +82,11 @@ class armtakeoff():
         last_request = rospy.get_rostime()
 
         while self.current_state.armed != False: 
-            print("Got in")
-            print(self.current_state.armed)
+            #print("Got in")
+            print("Arm {}" .format(self.current_state.armed))
             now = rospy.get_rostime()
-            if self.current_state.mode != "RETURN" and (now - last_request > rospy.Duration(5.)):
-                self.set_mode_client(base_mode=0, custom_mode="RETURN")
+            if self.current_state.mode != "AUTO.LAND" and (now - last_request > rospy.Duration(5.)):
+                self.set_mode_client(base_mode=0, custom_mode="AUTO.LAND")
                 last_request = now 
             else:
                 if not self.current_state.armed and (now - last_request > rospy.Duration(5.)):
