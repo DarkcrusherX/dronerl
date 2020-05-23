@@ -55,12 +55,12 @@ class QuadCopterEnv(gym.Env):
         self.seed()
 
     # A function to initialize the random generator
-    def seed(self, seed=None):
+    def _seed(self, seed=None):
         self.np_random, seed = seeding.np_random(seed)
         return [seed]
         
     # Resets the state of the environment and returns an initial observation.
-    def reset(self):
+    def _reset(self):
         
         # 1st disarm
         self.arming.disarm()
@@ -100,20 +100,20 @@ class QuadCopterEnv(gym.Env):
         # 1st, we decide which velocity command corresponds
         vel_cmd = TwistStamped()
         if action == 0: #FORWARD
-            vel_cmd.linear.x = self.speed_value
-            vel_cmd.angular.z = 0.0
+            vel_cmd.twist.linear.x = self.speed_value
+            vel_cmd.twist.angular.z = 0.0
         elif action == 1: #LEFT
-            vel_cmd.linear.x = 0.05
-            vel_cmd.angular.z = self.speed_value
+            vel_cmd.twist.linear.x = 0.05
+            vel_cmd.twist.angular.z = self.speed_value
         elif action == 2: #RIGHT
-            vel_cmd.linear.x = 0.05
-            vel_cmd.angular.z = -1*self.speed_value
+            vel_cmd.twist.linear.x = 0.05
+            vel_cmd.twist.angular.z = -1*self.speed_value
         elif action == 3: #Up
-            vel_cmd.linear.z = self.speed_value
-            vel_cmd.angular.z = 0.0
+            vel_cmd.twist.linear.z = self.speed_value
+            vel_cmd.twist.angular.z = 0.0
         elif action == 4: #Down
-            vel_cmd.linear.z = -1*self.speed_value
-            vel_cmd.angular.z = 0.0
+            vel_cmd.twist.linear.z = -1*self.speed_value
+            vel_cmd.twist.angular.z = 0.0
 
         # Then we send the command to the robot and let it go
         # for running_step seconds
@@ -124,7 +124,7 @@ class QuadCopterEnv(gym.Env):
         self.gazebo.pauseSim()
 
         # finally we get an evaluation based on what happened in the sim
-        reward,done = self.process_data(self.data_pose, self.data_lidar)
+        reward,done = self.process_data(self)
 
         # Promote going forwards instead if turning
         if action == 0:
@@ -143,14 +143,14 @@ class QuadCopterEnv(gym.Env):
     def take_observation (self):
 
         def current_pos_callback(position):
-            print("position data obtained")
+            #print("position data obtained")
             self.data_pose = position
 
 
         rospy.Subscriber('mavros/local_position/pose',PoseStamped,current_pos_callback)
 
         def lidar_callback(lidar_msg):
-            print("lidar data obtained")
+            #print("lidar data obtained")
             self.data_lidar=lidar_msg.ranges
 
 
