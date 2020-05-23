@@ -205,10 +205,12 @@ class QuadCopterEnv(gym.Env):
 
         done = False
         c=0
+        lidar_bad = False
         # Setting lidar obstacle range as 1m
-        for i in len(self.data_lidar):
+        for i in range(len(self.data_lidar)):
             if self.data_lidar[i] < 1:                   
                 c=c+1
+
         #  minimum number of lidar line  crossings        
         if c > len(self.data_lidar)*0.1:                   
             lidar_bad = True        
