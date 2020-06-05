@@ -1,5 +1,9 @@
 # dronerl
 
+A trainning code to generate a neural network that helps the drone to successfully travel to a setpoint.
+
+In this code the rewarding system is now completely based on distance from setpoint.
+
 ### src
 
 [arm.py](https://github.com/DarkcrusherX/dronerl/blob/master/src/arm.py) : Function to disarm and arm and takeoff the drone.
