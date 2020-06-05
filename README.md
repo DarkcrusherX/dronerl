@@ -10,7 +10,19 @@
 
 [rlgame.py](https://github.com/DarkcrusherX/dronerl/blob/master/src/rlgame.py) : Defining the neural network, processing observation/state (Q-value), Choosing action.
 
+### Installations
+
 [Install sitl with gazebo](https://github.com/Aeroclub-IITM/Installation-SITL-Gazebo-ROS)
+
+pip install gym
+
+pip install tensorflow
+
+pip install tensorflow-gpu
+
+pip install mitdeeplearning
+
+pip install ipython
 
 ### Launch
 
