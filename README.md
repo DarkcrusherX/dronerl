@@ -10,8 +10,10 @@
 
 [rlgame.py](https://github.com/DarkcrusherX/dronerl/blob/master/src/rlgame.py) : Defining the neural network, processing observation/state (Q-value), Choosing action.
 
-### Launch
-
 [Install sitl with gazebo](https://github.com/Aeroclub-IITM/Installation-SITL-Gazebo-ROS)
 
+### Launch
+
 Launch px4 sitl with gazebo( Can use ardupilot after changing OFFBOARD to GUIDED in arm.py), mavros and python rlgame.py.
+
+Disable preflight checks before running rlgame.py.
